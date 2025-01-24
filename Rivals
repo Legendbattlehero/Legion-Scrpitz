@@ -1,0 +1,1 @@
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/Legendbattlehero/legion-auto-farm-chest/refs/heads/main/Rivals'),true))()
