@@ -1,0 +1,287 @@
+Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "LegionWare",
+    LoadingTitle = "WesamX99",
+    LoadingSubtitle = "by WesamX",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "LegionX"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false
+})
+
+local PlayerTab = Window:CreateTab("Player", 4483362458) -- Title, Image
+
+-- Variables
+local silentAimActive = false
+local espActive = false
+local espBetterActive = false
+local aimbotActive = false
+local autoFarmActive = false
+local espList = {}
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- ESP Colors
+local colourTable = {
+    Green = Color3.fromRGB(0, 255, 0),
+    Blue = Color3.fromRGB(0, 0, 255),
+    Red = Color3.fromRGB(255, 0, 0),
+    Yellow = Color3.fromRGB(255, 255, 0),
+    Orange = Color3.fromRGB(255, 165, 0),
+    Purple = Color3.fromRGB(128, 0, 128)
+}
+local colourChosen = colourTable.Red
+_G.ESPToggle = false
+
+-- Highlight ESP Functions
+local function addHighlightToCharacter(player, character)
+    if player == LocalPlayer then return end  -- Skip local player
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart and not humanoidRootPart:FindFirstChild("Highlight") then
+        local highlightClone = Instance.new("Highlight")  -- Create a new Highlight instance
+        highlightClone.Name = "Highlight"
+        highlightClone.Adornee = character
+        highlightClone.Parent = humanoidRootPart
+        highlightClone.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlightClone.FillColor = colourChosen
+        highlightClone.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlightClone.FillTransparency = 0.5
+    end
+end
+
+local function removeHighlightFromCharacter(character)
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+        local highlightInstance = humanoidRootPart:FindFirstChild("Highlight")
+        if highlightInstance then
+            highlightInstance:Destroy()
+        end
+    end
+end
+
+local function updateHighlights()
+    for _, player in pairs(Players:GetPlayers()) do
+        local character = player.Character
+        if character then
+            if _G.ESPToggle then
+                addHighlightToCharacter(player, character)
+            else
+                removeHighlightFromCharacter(character)
+            end
+        end
+    end
+end
+
+-- Render Update for ESP
+RunService.RenderStepped:Connect(function()
+    updateHighlights()
+end)
+
+-- Add highlight for new players
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if _G.ESPToggle then
+            addHighlightToCharacter(player, character)
+        end
+    end)
+end)
+
+-- Remove highlights from leaving players
+Players.PlayerRemoving:Connect(function(playerRemoved)
+    local character = playerRemoved.Character
+    if character then
+        removeHighlightFromCharacter(character)
+    end
+end)
+
+-- ESP but better Toggle Button
+PlayerTab:CreateToggle({
+    Name = "ESP but better",
+    CurrentValue = false,
+    Flag = "ESPBetter", 
+    Callback = function(Value)
+        espBetterActive = Value
+        _G.ESPToggle = Value
+        print("ESP but better toggled:", Value)
+        if not espBetterActive then
+            -- Clear all highlights when toggled off
+            for _, player in pairs(Players:GetPlayers()) do
+                local character = player.Character
+                if character then
+                    removeHighlightFromCharacter(character)
+                end
+            end
+        end
+    end
+})
+
+-- Silent Aim and other features
+local function getNearestHead()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                closestPlayer = player
+            end
+        end
+    end
+
+    if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
+        return closestPlayer.Character.Head, closestPlayer
+    end
+
+    return nil, nil
+end
+
+-- Silent aim functionality with headshots
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and silentAimActive then
+        local targetHead, targetPlayer = getNearestHead()
+        if targetHead then
+            local aimPosition = targetHead.Position
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, aimPosition)
+            ReplicatedStorage.Remotes.Attack:FireServer(targetHead)
+        end
+    end
+end)
+
+-- Silent Aim Toggle Button
+PlayerTab:CreateToggle({
+    Name = "Silent Aim",
+    CurrentValue = false,
+    Flag = "SilentAim", 
+    Callback = function(Value)
+        silentAimActive = Value
+        print("Silent Aim toggled:", Value)
+    end
+})
+
+-- ESP Toggle Button
+PlayerTab:CreateToggle({
+    Name = "ESP",
+    CurrentValue = false,
+    Flag = "ESP", 
+    Callback = function(Value)
+        espActive = Value
+        if not espActive then
+            -- Remove all ESP charms when toggled off
+            for playerName, espData in pairs(espList) do
+                espData[1]:Remove()
+            end
+            espList = {}
+        end
+        print("ESP toggled:", Value)
+    end
+})
+
+-- Aimbot Functionality
+local function lockOnToHeadSmoothly()
+    local targetHead, targetPlayer = getNearestHead()
+    if targetHead then
+        local aimPosition = targetHead.Position
+        local currentCFrame = Camera.CFrame
+        local direction = (aimPosition - currentCFrame.Position).unit
+        local newPosition = currentCFrame.Position + direction * 0.2
+        Camera.CFrame = CFrame.new(newPosition, aimPosition)
+    end
+end
+
+-- Detect Q key press to toggle Aimbot
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Q then
+        aimbotActive = not aimbotActive
+        print("Aimbot toggled:", aimbotActive)
+    end
+end)
+
+-- Aimbot logic to continually aim at the closest player's head if enabled
+RunService.RenderStepped:Connect(function()
+    if aimbotActive then
+        lockOnToHeadSmoothly()
+    end
+end)
+
+-- Function to teleport above the nearest player
+local function teleportAboveNearestPlayer()
+    local closestHead, closestPlayer = getNearestHead()
+    if closestHead then
+        local teleportPosition = closestHead.Position + Vector3.new(0, 5, 0)
+        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(teleportPosition))
+    else
+        print("No nearby player found.")
+    end
+end
+
+-- Auto Farm Functionality
+local function autoFarm()
+    RunService.RenderStepped:Connect(function()
+        if autoFarmActive then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Head") and player ~= LocalPlayer then
+                    local headPosition = player.Character.Head.Position + Vector3.new(0, 5, 0)
+                    local farmMarker = Instance.new("Part")
+                    farmMarker.Size = Vector3.new(1, 1, 1)
+                    farmMarker.Shape = Enum.PartType.Ball
+                    farmMarker.Color = Color3.fromRGB(0, 255, 0)
+                    farmMarker.Position = headPosition
+                    farmMarker.Anchored = true
+                    farmMarker.CanCollide = false
+                    farmMarker.Parent = Workspace
+
+                    RunService.RenderStepped:Connect(function()
+                        if autoFarmActive and player.Character and player.Character:FindFirstChild("Head") then
+                            farmMarker.Position = player.Character.Head.Position + Vector3.new(0, 5, 0)
+                        else
+                            farmMarker:Destroy()
+                        end
+                    end)
+                end
+            end
+        end
+    end)
+end
+
+-- Create Auto Farm Toggle Button
+PlayerTab:CreateToggle({
+    Name = "Auto Farm",
+    CurrentValue = false,
+    Flag = "AutoFarm", 
+    Callback = function(Value)
+        autoFarmActive = Value
+        if autoFarmActive then
+            print("Auto Farm activated.")
+            autoFarm()
+        else
+            print("Auto Farm deactivated.")
+        end
+    end
+})
+
+-- Detect X key press to trigger teleport above nearest player
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.X then
+        teleportAboveNearestPlayer()
+        print("Teleported above the nearest player.")
+    end
+end)
+
+print("Silent Aim, ESP but better, Aimbot functionality, Teleport Button, and Auto Farm loaded successfully.")
