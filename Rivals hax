@@ -1,4 +1,4 @@
-Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "LegionWare",
@@ -22,10 +22,9 @@ local PlayerTab = Window:CreateTab("Player", 4483362458) -- Title, Image
 -- Variables
 local silentAimActive = false
 local espActive = false
-local espBetterActive = false
 local aimbotActive = false
 local autoFarmActive = false
-local espList = {}
+local espList = {} -- Keep track of ESP drawings
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -34,7 +33,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- ESP Colors
+-- Color table for ESP
 local colourTable = {
     Green = Color3.fromRGB(0, 255, 0),
     Blue = Color3.fromRGB(0, 0, 255),
@@ -43,10 +42,16 @@ local colourTable = {
     Orange = Color3.fromRGB(255, 165, 0),
     Purple = Color3.fromRGB(128, 0, 128)
 }
-local colourChosen = colourTable.Red
-_G.ESPToggle = false
+local colourChosen = colourTable.Red -- You can change this to any color you prefer
 
--- Highlight ESP Functions
+_G.ESPToggle = false -- Variable for enabling/disabling ESP
+
+-- Services and LocalPlayer
+local function getCharacter(player)
+    return Workspace:FindFirstChild(player.Name)
+end
+
+-- Add highlights to players
 local function addHighlightToCharacter(player, character)
     if player == LocalPlayer then return end  -- Skip local player
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
@@ -62,6 +67,7 @@ local function addHighlightToCharacter(player, character)
     end
 end
 
+-- Remove highlights from players
 local function removeHighlightFromCharacter(character)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if humanoidRootPart then
@@ -72,9 +78,10 @@ local function removeHighlightFromCharacter(character)
     end
 end
 
+-- Function to update highlights based on _G.ESPToggle
 local function updateHighlights()
     for _, player in pairs(Players:GetPlayers()) do
-        local character = player.Character
+        local character = getCharacter(player)
         if character then
             if _G.ESPToggle then
                 addHighlightToCharacter(player, character)
@@ -85,12 +92,12 @@ local function updateHighlights()
     end
 end
 
--- Render Update for ESP
+-- Connect events through RenderStepped to loop
 RunService.RenderStepped:Connect(function()
     updateHighlights()
 end)
 
--- Add highlight for new players
+-- Add highlight to joining players
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         if _G.ESPToggle then
@@ -107,28 +114,24 @@ Players.PlayerRemoving:Connect(function(playerRemoved)
     end
 end)
 
--- ESP but better Toggle Button
+-- Create the ESP toggle button inside Rayfield GUI
 PlayerTab:CreateToggle({
-    Name = "ESP but better",
+    Name = "ESP",
     CurrentValue = false,
-    Flag = "ESPBetter", 
+    Flag = "ESP", -- Identifier for configuration
     Callback = function(Value)
-        espBetterActive = Value
         _G.ESPToggle = Value
-        print("ESP but better toggled:", Value)
-        if not espBetterActive then
-            -- Clear all highlights when toggled off
-            for _, player in pairs(Players:GetPlayers()) do
-                local character = player.Character
-                if character then
-                    removeHighlightFromCharacter(character)
-                end
-            end
+        if _G.ESPToggle then
+            -- Enable ESP by adding highlights
+            print("ESP is ON")
+        else
+            -- Disable ESP by removing highlights
+            print("ESP is OFF")
         end
     end
 })
 
--- Silent Aim and other features
+-- Silent aim functionality with headshots
 local function getNearestHead()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -150,7 +153,7 @@ local function getNearestHead()
     return nil, nil
 end
 
--- Silent aim functionality with headshots
+-- Silent aim
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 and silentAimActive then
         local targetHead, targetPlayer = getNearestHead()
@@ -162,126 +165,66 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
--- Silent Aim Toggle Button
+-- Create Silent Aim Toggle
 PlayerTab:CreateToggle({
     Name = "Silent Aim",
     CurrentValue = false,
-    Flag = "SilentAim", 
+    Flag = "SilentAim", -- Identifier for configuration
     Callback = function(Value)
         silentAimActive = Value
         print("Silent Aim toggled:", Value)
     end
 })
 
--- ESP Toggle Button
-PlayerTab:CreateToggle({
-    Name = "ESP",
-    CurrentValue = false,
-    Flag = "ESP", 
-    Callback = function(Value)
-        espActive = Value
-        if not espActive then
-            -- Remove all ESP charms when toggled off
-            for playerName, espData in pairs(espList) do
-                espData[1]:Remove()
-            end
-            espList = {}
-        end
-        print("ESP toggled:", Value)
-    end
-})
-
--- Aimbot Functionality
-local function lockOnToHeadSmoothly()
-    local targetHead, targetPlayer = getNearestHead()
-    if targetHead then
-        local aimPosition = targetHead.Position
-        local currentCFrame = Camera.CFrame
-        local direction = (aimPosition - currentCFrame.Position).unit
-        local newPosition = currentCFrame.Position + direction * 0.2
-        Camera.CFrame = CFrame.new(newPosition, aimPosition)
-    end
-end
-
--- Detect Q key press to toggle Aimbot
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.Q then
-        aimbotActive = not aimbotActive
-        print("Aimbot toggled:", aimbotActive)
-    end
-end)
-
--- Aimbot logic to continually aim at the closest player's head if enabled
-RunService.RenderStepped:Connect(function()
-    if aimbotActive then
-        lockOnToHeadSmoothly()
-    end
-end)
-
 -- Function to teleport above the nearest player
 local function teleportAboveNearestPlayer()
     local closestHead, closestPlayer = getNearestHead()
     if closestHead then
-        local teleportPosition = closestHead.Position + Vector3.new(0, 5, 0)
+        -- Calculate position above the nearest player
+        local teleportPosition = closestHead.Position + Vector3.new(0, 5, 0)  -- Adjust the height value as needed
+        -- Move the local player to the new position
         LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(teleportPosition))
     else
         print("No nearby player found.")
     end
 end
 
--- Auto Farm Functionality
-local function autoFarm()
-    RunService.RenderStepped:Connect(function()
-        if autoFarmActive then
-            for _, player in pairs(Players:GetPlayers()) do
-                if player.Character and player.Character:FindFirstChild("Head") and player ~= LocalPlayer then
-                    local headPosition = player.Character.Head.Position + Vector3.new(0, 5, 0)
-                    local farmMarker = Instance.new("Part")
-                    farmMarker.Size = Vector3.new(1, 1, 1)
-                    farmMarker.Shape = Enum.PartType.Ball
-                    farmMarker.Color = Color3.fromRGB(0, 255, 0)
-                    farmMarker.Position = headPosition
-                    farmMarker.Anchored = true
-                    farmMarker.CanCollide = false
-                    farmMarker.Parent = Workspace
-
-                    RunService.RenderStepped:Connect(function()
-                        if autoFarmActive and player.Character and player.Character:FindFirstChild("Head") then
-                            farmMarker.Position = player.Character.Head.Position + Vector3.new(0, 5, 0)
-                        else
-                            farmMarker:Destroy()
-                        end
-                    end)
-                end
-            end
-        end
-    end)
-end
-
--- Create Auto Farm Toggle Button
-PlayerTab:CreateToggle({
-    Name = "Auto Farm",
-    CurrentValue = false,
-    Flag = "AutoFarm", 
-    Callback = function(Value)
-        autoFarmActive = Value
-        if autoFarmActive then
-            print("Auto Farm activated.")
-            autoFarm()
-        else
-            print("Auto Farm deactivated.")
-        end
-    end
-})
-
--- Detect X key press to trigger teleport above nearest player
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.X then
+-- Create a teleport button
+PlayerTab:CreateButton({
+    Name = "Teleport Above Nearest Player",
+    Callback = function()
         teleportAboveNearestPlayer()
         print("Teleported above the nearest player.")
     end
+})
+
+-- Aimbot function (smooth aim to the nearest player's head)
+local function lockOnToHeadSmoothly()
+    local targetHead, targetPlayer = getNearestHead()
+    if targetHead then
+        -- Gradual movement for aimbot, instead of instant snap
+        local aimPosition = targetHead.Position
+        local currentCFrame = Camera.CFrame
+        local direction = (aimPosition - currentCFrame.Position).unit  -- Get direction to target
+        local newPosition = currentCFrame.Position + direction * 0.2  -- Smooth step toward target position
+
+        Camera.CFrame = CFrame.new(newPosition, aimPosition)
+    end
+end
+
+-- Detect Q key press to toggle Aimbot
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end  -- Ignore if the game processed the input already
+    if input.KeyCode == Enum.KeyCode.Q then
+        aimbotActive = not aimbotActive
+        print("Aimbot toggled:", aimbotActive)
+    end
 end)
 
-print("Silent Aim, ESP but better, Aimbot functionality, Teleport Button, and Auto Farm loaded successfully.")
+-- Main loop for Aimbot
+RunService.RenderStepped:Connect(function()
+    if aimbotActive then
+        lockOnToHeadSmoothly()  -- Keep aiming smoothly to the head
+    end
+end)
+
