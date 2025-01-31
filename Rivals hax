@@ -143,7 +143,6 @@ local function getNearestHead()
                 shortestDistance = distance
                 closestPlayer = player
             end
-        end
     end
 
     if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
@@ -228,3 +227,28 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- AutoFarm functionality
+local function startAutoFarm()
+    -- You can implement your farming logic here, for now let's assume it just moves the character around
+    while autoFarmActive do
+        local targetPosition = Vector3.new(math.random(-50, 50), 10, math.random(-50, 50)) -- Random target position
+        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+        wait(2) -- Wait for 2 seconds before moving again
+    end
+end
+
+-- AutoFarm Toggle
+PlayerTab:CreateToggle({
+    Name = "AutoFarm",
+    CurrentValue = false,
+    Flag = "AutoFarm", -- Identifier for configuration
+    Callback = function(Value)
+        autoFarmActive = Value
+        if autoFarmActive then
+            print("AutoFarm is ON")
+            startAutoFarm()  -- Start auto farming
+        else
+            print("AutoFarm is OFF")
+        end
+    end
+})
