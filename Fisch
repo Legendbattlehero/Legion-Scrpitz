@@ -93,7 +93,7 @@ end
 -- Varbiables
 
 local autoShake = false
-local autoShakeDelay = 0.1
+local autoShakeDelay = 0.001
 local autoShakeMethod = "KeyCodeEvent"
 local autoShakeClickOffsetX = 0
 local autoShakeClickOffsetY = 0
@@ -347,7 +347,7 @@ AutoShakeKeyCodeEventText:SetupDependencies({
 
 AutoShakeSettings:AddSlider('AutoShakeDelay', {
     Text = 'AutoShake Delay',
-    Default = 0.1,
+    Default = 0.001,
     Min = 0,
     Max = 10,
     Rounding = 1,
@@ -453,7 +453,7 @@ local AutoCastSettings = AutoCastGroup:AddDependencyBox()
 
 AutoCastSettings:AddSlider('AutoCastDelay', {
     Text = 'AutoCast Delay',
-    Default = 2,
+    Default = 0.5,
     Min = 0,
     Max = 10,
     Rounding = 1,
@@ -739,25 +739,25 @@ FreezeCharacterGroup:AddToggle('FreezeCharacter', {
 local SettingsGroup = Tabs.Settings:AddLeftGroupbox('Settings')
 local CreditsGroup = Tabs.Settings:AddRightGroupbox('Credits')
 
-CreditsGroup:AddLabel('Made by kylosilly and netpa!')
-CreditsGroup:AddLabel('Made with love and hate :3')
+CreditsGroup:AddLabel('Made by LegionX!')
+CreditsGroup:AddLabel('Made with autsim')
 
 local DiscordButton = CreditsGroup:AddButton({
-    Text = 'Copy Fisch Discord Link',
+    Text = 'Raid',
     Func = function()
-        setclipboard('https://discord.gg/DEkfE99JFh')
+        setclipboard('https://discord.gg/autsim')
     end,
     DoubleClick = false,
-    Tooltip = 'Join our fisch discord!'
+    Tooltip = 'Join our autsim!'
 })
 
 local DiscordButton2 = CreditsGroup:AddButton({
-    Text = 'Copy Main Discord link',
+    Text = 'Copy Main',
     Func = function()
-        setclipboard('https://discord.gg/VudXCDCaBN')
+        setclipboard('kaka')
     end,
     DoubleClick = false,
-    Tooltip = 'Join our main discord!'
+    Tooltip = 'kaka!'
 })
 
 CreditsGroup:AddLabel('LegionX is the solution')
