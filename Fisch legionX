@@ -49,7 +49,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "Fisch | LegionX",
-    SubTitle = "v1.1 beta",
+    SubTitle = "v1.6 beta",
     TabWidth = 150,
     Size = UDim2.fromOffset(600, 400),
     Acrylic = false,
