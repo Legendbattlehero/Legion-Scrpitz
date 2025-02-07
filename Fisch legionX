@@ -630,7 +630,7 @@ do
         Content = "[⭐] - Zone Casting Fix\n[⭐] - Auto Shake No Delay fix speed\n[🟩] - Teleport to Midas Rod\n[🟧] - Better sell buttons\n[🟧] - Auto Shake Dropdown\n[🟧] - Auto Cast & Reel & Shake in one toggle now"
     })
     Tabs.Home:AddParagraph({
-        Title = "v1.5 - Meow!",
+        Title = "v1.5 - ye!",
         Content = "[⭐] - Zone Casting\n[🟩] - Player Move Speed\n[🟩] - Player Jump Power\n[🟩] - Fly\n[🟩] - Roblox Radio\n[🟩] - Auto Appraiser\n[🟧] - Better Freeze\n[🟧] - Auto Shake (mouse)\n[🟧] - Auto Cast & Reel (one button)"
     })
     Tabs.Home:AddParagraph({
@@ -638,7 +638,7 @@ do
         Content = "[🟩] - 4 buttons in teleport\n[🟩] - Button to enable fps cap"
     })
     Tabs.Home:AddParagraph({
-        Title = "v1.3 - FpS",
+        Title = "v1.3 - FpS cap",
         Content = "[🟩] - Fps Cap"
     })
     Tabs.Home:AddParagraph({
@@ -650,7 +650,7 @@ do
         Content = "[🟧] Phantom Clicks - fixed\n[🟧] Better Freeze\n[⭐] - No Shake Delay (Mouse Clicks)"
     })
     Tabs.Home:AddParagraph({
-        Title = "v1 - Meow",
+        Title = "v1 - broken "(",
         Content = "[🟧] Auto Shake Speed 0.3-1\n[🟧] Webhook Loger fixed\n[🟩] Black Screen\n[🟩] White Screen\n[🟩] FpS Booster\n[⭐] No Shake Delay (Premium)"
     })
     Tabs.Home:AddParagraph({
@@ -679,11 +679,11 @@ do
     })
     Tabs.Home:AddParagraph({
         Title = "v0.3 - Teleports",
-        Content = "[🟧] Fixed NPCs teleport\n[🟧] Fixed Item Grabber (🎃)\n[🟩] Teleport Fish Radar\n[🟩] Teleport Basic Diving Gear"
+        Content = "[🟧] Fixed NPCs teleport\n[🟧] Fixed Item Grabber ()\n[🟩] Teleport Fish Radar\n[🟩] Teleport Basic Diving Gear"
     })
     Tabs.Home:AddParagraph({
         Title = "v0.2 - Bug Fixes",
-        Content = "[🟧] Auto Shake\n[🟩] Auto Shake Delay\n[🟧] Auto Reel\n[🟧] Auto Cast\n[🟩] Teleport Place\n[🟩] Teleport NPCs\n[🟩] Teleport Items\n[🟩] Item Graber (🎃)\n[🟩] Noclip\n[🟩] Infinity Oxygen"
+        Content = "[🟧] Auto Shake\n[🟩] Auto Shake Delay\n[🟧] Auto Reel\n[🟧] Auto Cast\n[🟩] Teleport Place\n[🟩] Teleport NPCs\n[🟩] Teleport Items\n[🟩] Item Graber ()\n[🟩] Noclip\n[🟩] Infinity Oxygen"
     })
     Tabs.Home:AddParagraph({
         Title = "v0.1 - Release",
