@@ -132,45 +132,6 @@ local ESPButton = PlayerTab:CreateButton({
     end,
 })
 
--- WalkSpeed Slider
-local Slider = PlayerTab:CreateSlider({
-    Name = "WalkSpeed",
-    Range = {1, 10},
-    Increment = 1,
-    Suffix = "Speed",
-    CurrentValue = 10,
-    Flag = "Slider1",
-    Callback = function(Value)
-        game.Players.LocalPlayer.Character:SetAttribute("SpeedMultiplier", Value)
-    end,
-})
-
--- Dash Length Slider
-local Slider = PlayerTab:CreateSlider({
-    Name = "Dash length",
-    Range = {10, 1000},
-    Increment = 1,
-    Suffix = "Length",
-    CurrentValue = 10,
-    Flag = "Slider2",
-    Callback = function(Value)
-        game.Players.LocalPlayer.Character:SetAttribute("DashLength", Value)
-    end,
-})
-
--- Jump Height Slider
-local Slider = PlayerTab:CreateSlider({
-    Name = "Jump Height",
-    Range = {10, 500},
-    Increment = 1,
-    Suffix = "Height",
-    CurrentValue = 10,
-    Flag = "Slider3",
-    Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-    end,
-})
-
 -- Teleport Locations
 local teleportLocations = {
     Vector3.new(0.79, -10.31, -96.69),
