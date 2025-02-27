@@ -1,0 +1,112 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "LegionX | Skywars 🔥",
+    LoadingTitle = "LegionX | Skywars 🔥",
+    LoadingSubtitle = "From LegionX 🔥",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = nil, 
+       FileName = "Big Hub"
+    },
+    Discord = {
+       Enabled = false,
+       Invite = "noinvitelink",
+       RememberJoins = true
+    },
+    KeySystem = false, 
+    KeySettings = {
+       Title = "Untitled",
+       Subtitle = "Key System",
+       Note = "No method of obtaining the key is provided",
+       FileName = "Key",
+       SaveKey = true,
+       GrabKeyFromSite = false,
+       Key = {"Hello"}
+    }
+})
+
+local PlayerTab = Window:CreateTab("Player", 4483362458) 
+
+-- WalkSpeed Slider
+local Slider = PlayerTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {1, 10},
+    Increment = 1,
+    Suffix = "Speed",
+    CurrentValue = 10,
+    Flag = "Slider1",
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character:SetAttribute("SpeedMultiplier", Value)
+    end,
+})
+
+-- Dash Length Slider
+local Slider = PlayerTab:CreateSlider({
+    Name = "Dash length",
+    Range = {10, 1000},
+    Increment = 1,
+    Suffix = "Length",
+    CurrentValue = 10,
+    Flag = "Slider2",
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character:SetAttribute("DashLength", Value)
+    end,
+})
+
+-- Jump Height Slider
+local Slider = PlayerTab:CreateSlider({
+    Name = "Jump Height",
+    Range = {10, 500},
+    Increment = 1,
+    Suffix = "Height",
+    CurrentValue = 10,
+    Flag = "Slider3",
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+    end,
+})
+
+-- Teleport Locations
+local teleportLocations = {
+    Vector3.new(0.79, -10.31, -96.69),
+    Vector3.new(54.41, -7.31, -66.85),
+    Vector3.new(-94.77, -10.31, -1.24)
+}
+local fallbackLocation = Vector3.new(-101.61, -25.31, -108)
+local goldLocation = Vector3.new(23.69, -22.31, -24)
+
+local teleportIndex = 1 -- Start at the first location
+
+-- "Iron TP" Button (Cycles Locations + Fallback)
+local IronTPButton = PlayerTab:CreateButton({
+    Name = "Iron TP",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            local success = pcall(function()
+                hrp.CFrame = CFrame.new(teleportLocations[teleportIndex])
+            end)
+
+            -- If teleport fails, use fallback location
+            if not success then
+                hrp.CFrame = CFrame.new(fallbackLocation)
+            end
+
+            -- Cycle to the next location
+            teleportIndex = teleportIndex % #teleportLocations + 1
+        end
+    end,
+})
+
+-- "Gold TP" Button (Teleports to Fixed Location)
+local GoldTPButton = PlayerTab:CreateButton({
+    Name = "Gold TP",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(goldLocation)
+        end
+    end,
+})
