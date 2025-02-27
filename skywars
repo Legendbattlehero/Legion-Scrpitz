@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "LegionX | Skywars 🔥",
     LoadingTitle = "LegionX | Skywars 🔥",
-    LoadingSubtitle = "From LegionX 🔥",
+    LoadingSubtitle = "From LegionX",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = nil, 
@@ -197,23 +197,23 @@ local InfiniteJumpButton = PlayerTab:CreateButton({
             
             -- Set WalkSpeed to 49 speed
             character.Humanoid.WalkSpeed = 49  -- Set to 49 as requested
+        end
+    end,
+})
 
-            -- Track and manage 9999 jumps
-            local jumpCount = 0
-            local maxJumps = 9999  -- Number of jumps allowed
-            
-            -- Create a loop to manage jump count
-            humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function()
-                if humanoid:GetState() == Enum.HumanoidStateType.Physics then
-                    if jumpCount < maxJumps then
-                        jumpCount = jumpCount + 1
-                        humanoid:ChangeState(Enum.HumanoidStateType.Seated)  -- Keep the player in the air
-                    else
-                        -- After max jumps, prevent further jumping
-                        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                    end
-                end
-            end)
+-- Jump Height Slider
+local Slider = PlayerTab:CreateSlider({
+    Name = "Jump Height",
+    Range = {10, 500},
+    Increment = 1,
+    Suffix = "Height",
+    CurrentValue = 10,
+    Flag = "Slider3",
+    Callback = function(Value)
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.JumpPower = Value
         end
     end,
 })
@@ -254,3 +254,15 @@ local NoFallButton = PlayerTab:CreateButton({
         end
     end,
 })
+
+-- Ensure speed is set to 49 every 3 seconds
+while true do
+    wait(3)
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChild("Humanoid") then
+        local humanoid = character.Humanoid
+        if humanoid.WalkSpeed ~= 49 then
+            humanoid.WalkSpeed = 49
+        end
+    end
+end
