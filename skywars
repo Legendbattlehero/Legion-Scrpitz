@@ -5,28 +5,132 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "LegionX | Skywars 🔥",
     LoadingSubtitle = "From LegionX 🔥",
     ConfigurationSaving = {
-       Enabled = true,
-       FolderName = nil, 
-       FileName = "Big Hub"
+        Enabled = true,
+        FolderName = nil, 
+        FileName = "Big Hub"
     },
     Discord = {
-       Enabled = false,
-       Invite = "noinvitelink",
-       RememberJoins = true
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
     },
     KeySystem = false, 
     KeySettings = {
-       Title = "Untitled",
-       Subtitle = "Key System",
-       Note = "No method of obtaining the key is provided",
-       FileName = "Key",
-       SaveKey = true,
-       GrabKeyFromSite = false,
-       Key = {"Hello"}
+        Title = "Untitled",
+        Subtitle = "Key System",
+        Note = "No method of obtaining the key is provided",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"Hello"}
     }
 })
 
-local PlayerTab = Window:CreateTab("Player", 4483362458) 
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+
+-- ESP Settings
+local colourTable = {
+    Green = Color3.fromRGB(0, 255, 0),
+    Blue = Color3.fromRGB(0, 0, 255),
+    Red = Color3.fromRGB(255, 0, 0),  -- ESP set to Red
+    Yellow = Color3.fromRGB(255, 255, 0),
+    Orange = Color3.fromRGB(255, 165, 0),
+    Purple = Color3.fromRGB(128, 0, 128)
+}
+local colourChosen = colourTable.Red  -- Set ESP to Red color
+_G.ESPToggle = false  -- This variable will enable/disable ESP.
+
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+-- Function to get a character
+local function getCharacter(player)
+    return Workspace:FindFirstChild(player.Name)
+end
+
+-- Function to add highlights to players
+local function addHighlightToCharacter(player, character)
+    if player == LocalPlayer then return end  -- Skip local player
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart and not humanoidRootPart:FindFirstChild("Highlight") then
+        local highlightClone = Instance.new("Highlight")  -- Create a new Highlight instance
+        highlightClone.Name = "Highlight"
+        highlightClone.Adornee = character
+        highlightClone.Parent = humanoidRootPart
+        highlightClone.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlightClone.FillColor = colourChosen
+        highlightClone.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlightClone.FillTransparency = 0.5
+    end
+end
+
+-- Function to remove highlights from players
+local function removeHighlightFromCharacter(character)
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+        local highlightInstance = humanoidRootPart:FindFirstChild("Highlight")
+        if highlightInstance then
+            highlightInstance:Destroy()
+        end
+    end
+end
+
+-- Function to update highlights based on the value of _G.ESPToggle
+local function updateHighlights()
+    for _, player in pairs(Players:GetPlayers()) do
+        local character = getCharacter(player)
+        if character then
+            if _G.ESPToggle then
+                addHighlightToCharacter(player, character)
+            else
+                removeHighlightFromCharacter(character)
+            end
+        end
+    end
+end
+
+-- Connect events through RenderStepped to loop
+RunService.RenderStepped:Connect(function()
+    updateHighlights()
+end)
+
+-- Add highlight to joining players
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if _G.ESPToggle then
+            addHighlightToCharacter(player, character)
+        end
+    end)
+end)
+
+-- Remove highlights from leaving players
+Players.PlayerRemoving:Connect(function(playerRemoved)
+    local character = playerRemoved.Character
+    if character then
+        removeHighlightFromCharacter(character)
+    end
+end)
+
+-- Keybind to toggle ESP
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.H and not gameProcessed then -- Change Enum.KeyCode.H to another key if you want to
+        _G.ESPToggle = not _G.ESPToggle
+    end
+end)
+
+-- ESP Toggle Button
+local ESPButton = PlayerTab:CreateButton({
+    Name = "Toggle ESP",
+    Callback = function()
+        -- Toggle ESP On/Off
+        _G.ESPToggle = not _G.ESPToggle
+        print("ESP Toggled: ", _G.ESPToggle)
+    end,
+})
 
 -- WalkSpeed Slider
 local Slider = PlayerTab:CreateSlider({
@@ -107,6 +211,85 @@ local GoldTPButton = PlayerTab:CreateButton({
         local player = game.Players.LocalPlayer
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character.HumanoidRootPart.CFrame = CFrame.new(goldLocation)
+        end
+    end,
+})
+
+-- Infinite Jump and Speed Button
+local InfiniteJumpButton = PlayerTab:CreateButton({
+    Name = "Infinite Jump",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        
+        if humanoid then
+            -- Infinite Jump logic
+            UserInputService.JumpRequest:Connect(function()
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+            
+            -- Set JumpPower for Infinite Jumps
+            character.Humanoid.JumpPower = 50  -- Adjust JumpPower if necessary
+            
+            -- Set WalkSpeed to 49 speed
+            character.Humanoid.WalkSpeed = 49  -- Set to 49 as requested
+
+            -- Track and manage 9999 jumps
+            local jumpCount = 0
+            local maxJumps = 9999  -- Number of jumps allowed
+            
+            -- Create a loop to manage jump count
+            humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function()
+                if humanoid:GetState() == Enum.HumanoidStateType.Physics then
+                    if jumpCount < maxJumps then
+                        jumpCount = jumpCount + 1
+                        humanoid:ChangeState(Enum.HumanoidStateType.Seated)  -- Keep the player in the air
+                    else
+                        -- After max jumps, prevent further jumping
+                        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                    end
+                end
+            end)
+        end
+    end,
+})
+
+-- No Fall Button
+local noFallEnabled = false
+local NoFallButton = PlayerTab:CreateButton({
+    Name = "No Fall",
+    Callback = function()
+        noFallEnabled = not noFallEnabled  -- Toggle NoFall on or off
+        if noFallEnabled then
+            print("No Fall Enabled")
+            -- Prevent fall damage
+            local Players = game:GetService("Players")
+            local localPlayer = Players.LocalPlayer
+            local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local function preventFallDamage()
+                humanoid.StateChanged:Connect(function(_, newState)
+                    if newState == Enum.HumanoidStateType.Freefall then
+                        humanoid.Health = humanoid.MaxHealth  -- Prevent fall damage
+                    end
+                end)
+            end
+
+            -- Apply fall damage prevention
+            preventFallDamage()
+
+            -- Reset when the character respawns
+            localPlayer.CharacterAdded:Connect(function(newCharacter)
+                character = newCharacter
+                humanoid = character:WaitForChild("Humanoid")
+                preventFallDamage()  -- Reapply prevention
+            end)
+        else
+            print("No Fall Disabled")
         end
     end,
 })
